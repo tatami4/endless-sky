@@ -201,6 +201,8 @@ void Ship::Load(const DataNode &node)
 		}
 		if(key == "sprite")
 			LoadSprite(child);
+		else if(key == "uuid" && child.Size() >= 2)
+			uuid = child.Token(1);
 		else if(child.Token(0) == "thumbnail" && child.Size() >= 2)
 			thumbnail = SpriteSet::Get(child.Token(1));
 		else if(key == "name" && child.Size() >= 2)
@@ -722,9 +724,6 @@ void Ship::FinishLoading(bool isNewInstance)
 	// Perform a full IsDisabled calculation.
 	isDisabled = true;
 	isDisabled = IsDisabled();
-	
-	// Cache this ship's jump range so that it doesn't need calculated when needed.
-	jumpRange = JumpRange(false);
 }
 
 
@@ -737,6 +736,16 @@ bool Ship::IsValid() const
 			return false;
 	
 	return isDefined;
+}
+
+
+
+// Finishing loading the cargo requires the mission list.
+// This is only needed for the player's ships since the
+// NPCs should not have mission cargo.
+void Ship::FinishLoadingCargo(const PlayerInfo &player)
+{
+	cargo.FinishLoading(player.Missions());
 }
 
 
@@ -762,6 +771,9 @@ void Ship::Save(DataWriter &out) const
 			out.Write("uncapturable");
 		if(customSwizzle >= 0)
 			out.Write("swizzle", customSwizzle);
+		
+		if(!uuid.empty())
+			out.Write("uuid", uuid);
 		
 		out.Write("attributes");
 		out.BeginChild();
@@ -960,6 +972,28 @@ const string &Ship::Name() const
 void Ship::SetModelName(const string &model)
 {
 	this->modelName = model;
+}
+
+
+
+const string &Ship::UUID() const
+{
+	return uuid;
+}
+
+
+
+void Ship::EnsureUUID()
+{
+	if(uuid.empty())
+		uuid = Random::UUID();
+}
+
+
+
+void Ship::NewUUID()
+{
+	uuid = Random::UUID();
 }
 
 

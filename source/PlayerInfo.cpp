@@ -85,6 +85,7 @@ void PlayerInfo::New()
 		ships.back()->SetIsSpecial();
 		ships.back()->SetIsYours();
 		ships.back()->SetGovernment(GameData::PlayerGovernment());
+		ships.back()->NewUUID();
 	}
 	// Load starting conditions from a "start" item in the data files. If no
 	// such item exists, StartConditions defines default values.
@@ -179,6 +180,8 @@ void PlayerInfo::Load(const string &path)
 			ships.back()->SetIsSpecial();
 			ships.back()->SetIsYours();
 			// Defer finalizing this ship until we have processed all changes to game state.
+			
+			ships.back()->EnsureUUID();
 		}
 		else if(child.Token(0) == "groups" && child.Size() >= 2 && !ships.empty())
 			groups[ships.back().get()] = child.Value(1);
@@ -218,12 +221,18 @@ void PlayerInfo::Load(const string &path)
 		else if(child.Token(0) == "mission")
 		{
 			missions.emplace_back(child);
-			cargo.AddMissionCargo(&missions.back());
+			missions.back().EnsureUUID();
 		}
 		else if(child.Token(0) == "available job")
+		{
 			availableJobs.emplace_back(child);
+			availableJobs.back().EnsureUUID();
+		}
 		else if(child.Token(0) == "available mission")
+		{
 			availableMissions.emplace_back(child);
+			availableMissions.back().EnsureUUID();
+		}
 		else if(child.Token(0) == "conditions")
 		{
 			for(const DataNode &grand : child)
@@ -291,6 +300,11 @@ void PlayerInfo::Load(const string &path)
 	// Restore access to services, if it was granted previously.
 	if(planet && hasFullClearance)
 		planet->Bribe();
+	
+	// Finish loading the player's cargo holds now that we have the mission list
+	for(auto &it : ships)
+		it->FinishLoadingCargo(*this);
+	cargo.FinishLoading(Missions());
 	
 	// Based on the ships that were loaded, calculate the player's capacity for
 	// cargo and passengers.
@@ -860,6 +874,7 @@ void PlayerInfo::BuyShip(const Ship *model, const string &name, bool isGift)
 		ships.back()->SetIsSpecial();
 		ships.back()->SetIsYours();
 		ships.back()->SetGovernment(GameData::PlayerGovernment());
+		ships.back()->NewUUID();
 		
 		accounts.AddCredits(-cost);
 		flagship.reset();

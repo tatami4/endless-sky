@@ -218,24 +218,23 @@ void PlayerInfo::Load(const string &path)
 		else if(child.Token(0) == "mission")
 		{
 			missions.emplace_back(child);
-			cargo.AddMissionCargo(&missions.back());
+			// For compatibility with old saves we load the mission the old way if it
+			// does not have UUID.
+			if(missions.back().UUID().empty())
+				cargo.AddMissionCargo(&missions.back());
 		}
 		else if(child.Token(0) == "available job")
 			availableJobs.emplace_back(child);
 		else if(child.Token(0) == "available mission")
 			availableMissions.emplace_back(child);
 		else if(child.Token(0) == "conditions")
-		{
 			for(const DataNode &grand : child)
 				conditions[grand.Token(0)] = (grand.Size() >= 2) ? grand.Value(1) : 1;
-		}
 		else if(child.Token(0) == "event")
 			gameEvents.emplace_back(child);
 		else if(child.Token(0) == "changes")
-		{
 			for(const DataNode &grand : child)
 				dataChanges.push_back(grand);
-		}
 		else if(child.Token(0) == "economy")
 			economy = child;
 		else if(child.Token(0) == "destroyed" && child.Size() >= 2)
@@ -283,6 +282,12 @@ void PlayerInfo::Load(const string &path)
 			}
 		}
 	}
+	
+	// Finish loading the player's cargo holds now that we have the mission list.
+	for(auto &it : ships)
+		it->FinishLoadingCargo(*this);
+	cargo.FinishLoading(Missions());
+	
 	// Modify the game data with any changes that were loaded from this file.
 	ApplyChanges();
 	// Ensure the player is in a valid state after loading & applying changes.
@@ -1691,7 +1696,10 @@ void PlayerInfo::MissionCallback(int response)
 		missions.splice(spliceIt, missionList, missionList.begin());
 		mission.Do(Mission::ACCEPT, *this);
 		if(shouldAutosave)
+		{
+			EnsureUUIDs();
 			Autosave();
+		}
 		// If this is a mission offered in-flight, expose a pointer to it
 		// so Engine::SpawnFleets can add its ships without requiring the
 		// player to land.
@@ -2943,6 +2951,18 @@ void PlayerInfo::Save(const string &path) const
 			}
 	}
 	out.EndChild();
+}
+
+
+
+void PlayerInfo::EnsureUUIDs()
+{
+	for(Mission &mission : missions)
+		mission.EnsureUUIDs();
+	for(Mission &mission : inactiveMissions)
+		mission.EnsureUUIDs();
+	for(auto &ship : ships)
+		ship->EnsureUUID();
 }
 
 

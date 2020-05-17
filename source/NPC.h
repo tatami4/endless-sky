@@ -58,6 +58,10 @@ public:
 	void UpdateSpawning(const PlayerInfo &player);
 	bool ShouldSpawn() const;
 	
+	const std::string &UUID() const;
+	void EnsureUUID();
+	void NewUUID();
+	
 	// Get the ships associated with this set of NPCs.
 	const std::list<std::shared_ptr<Ship>> Ships() const;
 	
@@ -81,6 +85,8 @@ private:
 	// The government of the ships in this NPC:
 	const Government *government = nullptr;
 	Personality personality;
+	
+	std::string uuid;
 	
 	// Start out in a location matching this filter, or in a particular system:
 	LocationFilter location;

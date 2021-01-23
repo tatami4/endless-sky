@@ -1633,7 +1633,7 @@ void Ship::Move(vector<Visual> &visuals, list<shared_ptr<Flotsam>> &flotsam)
 	double mass = Mass();
 	bool isUsingAfterburner = false;
 	if(isDisabled)
-		velocity *= 1. - attributes.Get("drag") / mass;
+		velocity *= max(0., 1. - attributes.Get("drag") / mass); // TODO: with very high drag this will introduce bugs
 	else if(!pilotError)
 	{
 		if(commands.Turn())
@@ -1704,13 +1704,23 @@ void Ship::Move(vector<Visual> &visuals, list<shared_ptr<Flotsam>> &flotsam)
 	if(acceleration)
 	{
 		acceleration *= slowMultiplier;
-		Point dragAcceleration = acceleration - velocity * (attributes.Get("drag") / mass);
+		
+		Point finalVelocity = velocity * (attributes.Get("drag") / mass);
+		double realVelocity = velocity.Length();
+		double dragVelocity = finalVelocity.Length();
+		
+		// If applying drag makes velocity negative, then set velocity to 0.
+		if(dragVelocity > realVelocity)
+			finalVelocity = Point();
+		
+		Point dragAcceleration = acceleration - finalVelocity;
+// 		Point dragAcceleration = acceleration - velocity * (attributes.Get("drag") / mass); // TODO: fix this shit
 		// Make sure dragAcceleration has nonzero length, to avoid divide by zero.
 		if(dragAcceleration)
 		{
 			// What direction will the net acceleration be if this drag is applied?
-			// If the net acceleration will be opposite the thrust, do not apply drag.
-			dragAcceleration *= .5 * (acceleration.Unit().Dot(dragAcceleration.Unit()) + 1.);
+			// If the net acceleration will be opposite to the thrust, do not apply drag.
+			dragAcceleration *= .5 * (acceleration.Unit().Dot(dragAcceleration.Unit()) + 1.); // TODO: this looks fishy
 			
 			// A ship can only "cheat" to stop if it is moving slow enough that
 			// it could stop completely this frame. This is to avoid overshooting
@@ -1728,6 +1738,7 @@ void Ship::Move(vector<Visual> &visuals, list<shared_ptr<Flotsam>> &flotsam)
 				if((aNormal > 0.) != (vNormal > 0.) && fabs(aNormal) > fabs(vNormal))
 					dragAcceleration = -vNormal * angle.Unit();
 			}
+// 			velocity = finalVelocity + dragAcceleration;
 			velocity += dragAcceleration;
 		}
 		acceleration = Point();

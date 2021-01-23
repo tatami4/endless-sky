@@ -578,10 +578,10 @@ void ShopPanel::ToggleCargo()
 // Only override the ones you need; the default action is to return false.
 bool ShopPanel::KeyDown(SDL_Keycode key, Uint16 mod, const Command &command, bool isNewPress)
 {
+	bool control = mod & (KMOD_CTRL | KMOD_GUI);
 	scrollDetailsIntoView = false;
 	bool toStorage = selectedOutfit && (key == 'r' || key == 'u');
-	if(key == 'l' || key == 'd' || key == SDLK_ESCAPE
-			|| (key == 'w' && (mod & (KMOD_CTRL | KMOD_GUI))))
+	if(key == 'l' || key == 'd' || key == SDLK_ESCAPE || (key == 'w' && control))
 	{
 		player.UpdateCargoCapacities();
 		GetUI()->Pop(this);
@@ -648,7 +648,7 @@ bool ShopPanel::KeyDown(SDL_Keycode key, Uint16 mod, const Command &command, boo
 	else if(key >= '0' && key <= '9')
 	{
 		int group = key - '0';
-		if(mod & (KMOD_CTRL | KMOD_GUI))
+		if(control)
 			player.SetGroup(group, &playerShips);
 		else if(mod & KMOD_SHIFT)
 		{

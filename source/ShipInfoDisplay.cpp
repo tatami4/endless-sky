@@ -64,24 +64,17 @@ int ShipInfoDisplay::OutfitsHeight() const
 
 
 
-void ShipInfoDisplay::DrawAttributes(const Point &topLeft) const
-{
-	DrawAttributes(topLeft, false);
-}
-
-
-
 // Draw each of the panels.
-void ShipInfoDisplay::DrawAttributes(const Point &topLeft, const bool sale) const
+void ShipInfoDisplay::DrawAttributes(const Point& topLeft, const bool sale) const
 {
 	// Header.
 	Point point = Draw(topLeft, attributeHeaderLabels, attributeHeaderValues);
-
+	
 	// Sale info.
 	if(sale)
 	{
 		point = Draw(point, saleLabels, saleValues);
-
+		
 		const Color &color = *GameData::Colors().Get("medium");
 		FillShader::Fill(point + Point(.5 * WIDTH, 5.), Point(WIDTH - 20., 1.), color);
 	}
@@ -89,7 +82,7 @@ void ShipInfoDisplay::DrawAttributes(const Point &topLeft, const bool sale) cons
 	{
 		point -= Point(0, 10.);
 	}
-
+	
 	// Body.
 	point = Draw(point, attributeLabels, attributeValues);
 	
@@ -133,11 +126,11 @@ void ShipInfoDisplay::UpdateAttributes(const Ship &ship, const Depreciation &dep
 	
 	attributeHeaderLabels.clear();
 	attributeHeaderValues.clear();
-
-	attributeHeaderLabels.push_back("model:");
-	attributeHeaderValues.push_back(ship.ModelName());
+	
+// 	attributeHeaderLabels.push_back("model:");
+// 	attributeHeaderValues.push_back(ship.ModelName());
 	attributesHeight = 20;
-
+	
 	attributeLabels.clear();
 	attributeValues.clear();
 	
@@ -195,10 +188,10 @@ void ShipInfoDisplay::UpdateAttributes(const Ship &ship, const Depreciation &dep
 	attributesHeight += 20;
 	attributeLabels.push_back(isGeneric ? "cargo space:" : "cargo:");
 	if(isGeneric)
-		attributeValues.push_back(Format::Number(attributes.Get("cargo space")) + " tons");
+		attributeValues.push_back(Format::Number(attributes.Get("cargo space")) + " m3");
 	else
 		attributeValues.push_back(Format::Number(ship.Cargo().Used())
-			+ " / " + Format::Number(attributes.Get("cargo space")) + " tons");
+			+ " / " + Format::Number(attributes.Get("cargo space")) + " m3");
 	attributesHeight += 20;
 	if(ship.RequiredCrew() != attributes.Get("bunks"))
 	{

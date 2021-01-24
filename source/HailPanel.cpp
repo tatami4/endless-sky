@@ -89,10 +89,14 @@ HailPanel::HailPanel(PlayerInfo &player, const shared_ptr<Ship> &ship)
 		if(flagship->IsDisabled())
 		{
 			playerNeedsHelp = true;
-			canRepair = true;
+			// Fighters and drones cannot help you.
+			canRepair = !ship->CanBeCarried();
 		}
 		
-		if(ship->GetPersonality().IsSurveillance())
+		// Fighters and drones cannot help you.
+		// 		bool cannotHelp = ship->CanBeCarried();
+		
+		if(ship->GetPersonality().IsSurveillance() /*|| cannotHelp*/)
 		{
 			canGiveFuel = false;
 			canRepair = false;
@@ -103,13 +107,22 @@ HailPanel::HailPanel(PlayerInfo &player, const shared_ptr<Ship> &ship)
 		else if(canGiveFuel || canRepair)
 		{
 			message = "Looks like you've gotten yourself into a bit of trouble. "
-				"Would you like us to ";
+			"Would you like us to ";
 			if(canGiveFuel && canRepair)
 				message += "patch you up and give you some fuel?";
 			else if(canGiveFuel)
 				message += "give you some fuel?";
 			else if(canRepair)
 				message += "patch you up?";
+		}
+		else if(playerNeedsHelp /*&& cannotHelp*/)
+		{
+			const auto &parent = ship->GetParent();
+			if(parent)
+				message = "Unfortunately, we cannot help you. "
+				"Maybe you should ask our carrier " + parent->Name() + " for assistance.";
+			else
+				message = "Unfortunately, we cannot help you.";
 		}
 	}
 	

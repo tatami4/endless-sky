@@ -2643,7 +2643,9 @@ void Ship::Recharge(bool atSpaceport)
 
 bool Ship::CanRefuel(const Ship &other) const
 {
-	return (fuel - JumpFuel(targetSystem) >= other.JumpFuelMissing());
+	// Fighters and drones cannot give fuel.
+	return !other.CanBeCarried() && 
+		(fuel - JumpFuel(targetSystem) >= other.JumpFuelMissing());
 }
 
 

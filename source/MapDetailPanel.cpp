@@ -52,6 +52,7 @@ PARTICULAR PURPOSE.  See the GNU General Public License for more details.
 #include <set>
 #include <utility>
 #include <vector>
+#include <iostream>
 
 using namespace std;
 
@@ -210,7 +211,7 @@ bool MapDetailPanel::KeyDown(SDL_Keycode key, Uint16 mod, const Command &command
 }
 
 
-
+// TODO: this needs to be modified to correctly handle clicks
 bool MapDetailPanel::Click(int x, int y, int clicks)
 {
 	if(x < Screen::Left() + 160)
@@ -447,7 +448,7 @@ void MapDetailPanel::DrawKey()
 // details, trade prices, and details about the selected object.
 void MapDetailPanel::DrawInfo()
 {
-	const Color &faint = *GameData::Colors().Get("faint");
+// 	const Color &faint = *GameData::Colors().Get("faint");
 	const Color &dim = *GameData::Colors().Get("dim");
 	const Color &medium = *GameData::Colors().Get("medium");
 	
@@ -471,14 +472,15 @@ void MapDetailPanel::DrawInfo()
 		PointerShader::Draw(uiPoint + Point(-90., 20.), Point(1., 0.),
 			10.f, 10.f, 0.f, medium);
 	
-	uiPoint.Y() += 115.;
+// 	uiPoint.Y() += 115.;
 	
 	planetY.clear();
 	// Draw the basic information for visitable planets in this system.
 	if(player.HasVisited(*selectedSystem))
 	{
 		set<const Planet *> shown;
-		const Sprite *planetSprite = SpriteSet::Get("ui/map planet");
+		// Box to hold planet info.
+// 		const Sprite *planetSprite = SpriteSet::Get("ui/map planet");
 		for(const StellarObject &object : selectedSystem->Objects())
 			if(object.GetPlanet())
 			{
@@ -489,50 +491,85 @@ void MapDetailPanel::DrawInfo()
 					continue;
 				shown.insert(planet);
 				
+				// What amenities does this planet have?
+				bool hasSpaceport = planet->HasSpaceport();
+				bool hasOutfitter = planet->HasOutfitter();
+				bool hasShipyard = planet->HasShipyard();
+				int amenityCount = hasSpaceport + hasOutfitter + hasShipyard;
+				const Sprite *planetSprite;
+				cout<<planet->Name()<<" "<<to_string(amenityCount)<<"\n";
+				switch (amenityCount)
+				{
+					case 0:
+						planetSprite = SpriteSet::Get("ui/map planet a");
+						break;
+					case 1:
+						planetSprite = SpriteSet::Get("ui/map planet aa");
+						break;
+					case 2:
+						planetSprite = SpriteSet::Get("ui/map planet aaa");
+						break;
+					case 3:
+						planetSprite = SpriteSet::Get("ui/map planet");
+						break;
+				}
+				
+// 				uiPoint.Y() += (amenityCount * 25) + 55.; //130.;
+// 				uiPoint.Y() -= 15 * (3 - amenityCount);
+				
+				float yOffset = -52.;
+				
 				SpriteShader::Draw(planetSprite, uiPoint);
-				planetY[planet] = uiPoint.Y() - 60;
+				planetY[planet] = uiPoint.Y() - (amenityCount * 15) - 15; //- 60;
 				
 				font.Draw({object.Name(), alignLeft},
-					uiPoint + Point(-70., -52.),
+					uiPoint + Point(-70., yOffset),
 					planet == selectedPlanet ? medium : dim);
+				yOffset += 20.;
 				
-				bool hasSpaceport = planet->HasSpaceport();
-				string reputationLabel = !hasSpaceport ? "No Spaceport" :
-					GameData::GetPolitics().HasDominated(planet) ? "Dominated" :
-					planet->GetGovernment()->IsEnemy() ? "Hostile" :
-					planet->CanLand() ? "Friendly" : "Restricted";
-				font.Draw(reputationLabel,
-					uiPoint + Point(-60., -32.),
-					hasSpaceport ? medium : faint);
-				if(commodity == SHOW_REPUTATION)
-					PointerShader::Draw(uiPoint + Point(-60., -25.), Point(1., 0.),
-						10.f, 10.f, 0.f, medium);
+				if(hasSpaceport)
+				{
+					string reputationLabel = GameData::GetPolitics().HasDominated(planet) ? "Dominated" :
+						planet->GetGovernment()->IsEnemy() ? "Hostile" :
+						planet->CanLand() ? "Friendly" : "Restricted";
+					font.Draw(reputationLabel, uiPoint + Point(-60., yOffset), medium);
+					if(commodity == SHOW_REPUTATION)
+						PointerShader::Draw(uiPoint + Point(-60., yOffset + 7.), Point(1., 0.),
+							10.f, 10.f, 0.f, medium);
+					yOffset += 20.;
+				}
 				
-				font.Draw("Shipyard",
-					uiPoint + Point(-60., -12.),
-					planet->HasShipyard() ? medium : faint);
-				if(commodity == SHOW_SHIPYARD)
-					PointerShader::Draw(uiPoint + Point(-60., -5.), Point(1., 0.),
-						10.f, 10.f, 0.f, medium);
+				if(hasShipyard)
+				{
+					font.Draw("Shipyard", uiPoint + Point(-60., yOffset), medium);
+					if(commodity == SHOW_SHIPYARD)
+						PointerShader::Draw(uiPoint + Point(-60., yOffset + 7.), Point(1., 0.),
+							10.f, 10.f, 0.f, medium);
+					yOffset += 20.;
+				}
 				
-				font.Draw("Outfitter",
-					uiPoint + Point(-60., 8.),
-					planet->HasOutfitter() ? medium : faint);
-				if(commodity == SHOW_OUTFITTER)
-					PointerShader::Draw(uiPoint + Point(-60., 15.), Point(1., 0.),
-						10.f, 10.f, 0.f, medium);
+				if(hasOutfitter)
+				{
+					font.Draw("Outfitter", uiPoint + Point(-60., yOffset), medium);
+					if(commodity == SHOW_OUTFITTER)
+						PointerShader::Draw(uiPoint + Point(-60., yOffset + 7.), Point(1., 0.),
+							10.f, 10.f, 0.f, medium);
+					yOffset += 20.;
+				}
 				
 				bool hasVisited = player.HasVisited(*planet);
 				font.Draw(hasVisited ? "(has been visited)" : "(not yet visited)",
-					uiPoint + Point(-70., 28.),
+					uiPoint + Point(-70., yOffset),
 					dim);
 				if(commodity == SHOW_VISITED)
-					PointerShader::Draw(uiPoint + Point(-70., 35.), Point(1., 0.),
+					PointerShader::Draw(uiPoint + Point(-70., yOffset + 7.), Point(1., 0.),
 						10.f, 10.f, 0.f, medium);
 				
-				uiPoint.Y() += 130.;
+// 				uiPoint.Y() += (amenityCount * 25) + 55.; //130.;
 			}
 	}
+	else
+		uiPoint.Y() += 115.;
 	
 	uiPoint.Y() += 45.;
 	tradeY = uiPoint.Y() - 95.;

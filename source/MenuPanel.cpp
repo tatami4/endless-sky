@@ -121,6 +121,7 @@ void MenuPanel::Draw()
 	GameData::Interfaces().Get("main menu")->Draw(info, this);
 	GameData::Interfaces().Get("menu player info")->Draw(info, this);
 	
+	// Draw the central "wheel".
 	if(progress == 60)
 		alpha -= .02f;
 	if(alpha > 0.f)
@@ -135,6 +136,7 @@ void MenuPanel::Draw()
 		}
 	}
 	
+	// Draw credits.
 	int y = 120 - scroll / scrollSpeed;
 	for(const string &line : credits)
 	{
@@ -203,4 +205,31 @@ bool MenuPanel::KeyDown(SDL_Keycode key, Uint16 mod, const Command &command, boo
 		return false;
 	
 	return true;
+}
+
+
+
+bool MenuPanel::Drag(double dx, double dy)
+{
+	auto it = files.find(selectedPilot);
+	if(sideHasFocus)
+		sideScroll = max(0., min(20. * files.size() - 280., sideScroll - dy));
+	else if(!selectedPilot.empty() && it != files.end())
+		centerScroll = max(0., min(20. * it->second.size() - 280., centerScroll - dy));
+	return true;
+}
+
+
+
+bool MenuPanel::Scroll(double dx, double dy)
+{
+	if(
+	return Drag(0., dy * Preferences::ScrollSpeed());
+}
+
+
+
+bool MenuPanel::Hover(int x, int y)
+{
+	hoverPoint = Point(x, y);
 }

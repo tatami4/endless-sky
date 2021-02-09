@@ -22,6 +22,7 @@ PARTICULAR PURPOSE.  See the GNU General Public License for more details.
 #include "Outfit.h"
 #include "Personality.h"
 #include "Point.h"
+#include "UUID.h"
 
 #include <list>
 #include <map>
@@ -130,9 +131,7 @@ public:
 	// Save a full description of this ship, as currently configured.
 	void Save(DataWriter &out) const;
 	
-	const std::string &UUID() const;
-	void EnsureUUID();
-	void NewUUID();
+	std::string &UUID();
 	
 	// Get the name of this particular ship.
 	const std::string &Name() const;
@@ -444,7 +443,7 @@ private:
 	const Government *government;
 	*/
 	
-	std::string uuid;
+	class UUID uuid;
 	
 	// Characteristics of the chassis:
 	bool isDefined = false;

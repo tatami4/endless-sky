@@ -96,7 +96,7 @@ void NPC::Load(const DataNode &node)
 				location.Load(child);
 		}
 		else if(child.Token(0) == "uuid" && child.Size() >= 2)
-			uuid = child.Token(1);
+			uuid.Set(child.Token(1));
 		else if(child.Token(0) == "planet" && child.Size() >= 2)
 			planet = GameData::Planets().Get(child.Token(1));
 		else if(child.Token(0) == "succeed" && child.Size() >= 2)
@@ -225,8 +225,8 @@ void NPC::Save(DataWriter &out) const
 	out.Write("npc");
 	out.BeginChild();
 	{
-		if(!uuid.empty())
-			out.Write("uuid", uuid);
+		if(!uuid.GetCurrent().empty())
+			out.Write("uuid", uuid.GetCurrent());
 		if(succeedIf)
 			out.Write("succeed", succeedIf);
 		if(failIf)
@@ -347,9 +347,9 @@ bool NPC::IsValid(bool asTemplate) const
 
 
 
-const string &NPC::UUID() const
+string &NPC::UUID()
 {
-	return uuid;
+	return uuid.GetOrCreate();
 }
 
 
@@ -374,25 +374,10 @@ void NPC::UpdateSpawning(const PlayerInfo &player)
 
 
 
-void NPC::EnsureUUID()
-{
-	if(uuid.empty())
-		uuid = Random::UUID();
-}
-
-
-
 // Determine if this NPC should be placed in-flight.
 bool NPC::ShouldSpawn() const
 {
 	return passedSpawnConditions && !passedDespawnConditions;
-}
-
-
-
-void NPC::NewUUID()
-{
-	uuid = Random::UUID();
 }
 
 
@@ -580,7 +565,6 @@ NPC NPC::Instantiate(map<string, string> &subs, const System *origin, const Syst
 	result.government = government;
 	if(!result.government)
 		result.government = GameData::PlayerGovernment();
-	result.uuid = Random::UUID();
 	result.personality = personality;
 	result.succeedIf = succeedIf;
 	result.failIf = failIf;
@@ -615,8 +599,6 @@ NPC NPC::Instantiate(map<string, string> &subs, const System *origin, const Syst
 		result.ships.push_back(make_shared<Ship>(**shipIt));
 		result.ships.back()->SetName(*nameIt);
 	}
-	for(auto resultShipIt : result.ships)
-		resultShipIt->NewUUID();
 	for(const Fleet &fleet : fleets)
 		fleet.Place(*result.system, result.ships, false);
 	for(const Fleet *fleet : stockFleets)

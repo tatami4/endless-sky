@@ -18,6 +18,7 @@ PARTICULAR PURPOSE.  See the GNU General Public License for more details.
 #include "LocationFilter.h"
 #include "Personality.h"
 #include "Phrase.h"
+#include "UUID.h"
 
 #include <list>
 #include <map>
@@ -58,9 +59,7 @@ public:
 	void UpdateSpawning(const PlayerInfo &player);
 	bool ShouldSpawn() const;
 	
-	const std::string &UUID() const;
-	void EnsureUUID();
-	void NewUUID();
+	std::string &UUID();
 	
 	// Get the ships associated with this set of NPCs.
 	const std::list<std::shared_ptr<Ship>> Ships() const;
@@ -86,7 +85,7 @@ private:
 	const Government *government = nullptr;
 	Personality personality;
 	
-	std::string uuid;
+	class UUID uuid;
 	
 	// Start out in a location matching this filter, or in a particular system:
 	LocationFilter location;

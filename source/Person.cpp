@@ -38,7 +38,6 @@ void Person::Load(const DataNode &node)
 			ships.emplace_back(new Ship(child));
 			if(setName)
 				ships.back()->SetName(child.Token(2));
-			ships.back()->NewUUID();
 		}
 		else if(child.Token(0) == "government" && child.Size() >= 2)
 			government = GameData::Governments().Get(child.Token(1));

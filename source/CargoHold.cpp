@@ -155,7 +155,6 @@ void CargoHold::Save(DataWriter &out) const
 	deactivateScope(innerActive);
 	
 	// Save all outfits, even ones which have only been referred to.
-	bool firstOutfit = true;
 	for(const auto &it : outfits)
 		if(it.second)
 		{

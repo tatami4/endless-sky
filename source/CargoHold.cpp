@@ -77,25 +77,18 @@ void CargoHold::Load(const DataNode &node)
 				}
 		}
 		else if(child.Token(0) == "outfits")
-		{
 			for(const DataNode &grand : child)
 			{
 				const Outfit *outfit = GameData::Outfits().Get(grand.Token(0));
 				int count = (grand.Size() < 2) ? 1 : grand.Value(1);
 				outfits[outfit] += count;
 			}
-		}
 		else if(child.Token(0) == "mission cargo")
 			for(const DataNode &grand : child)
-			{
 				loadedMissionCargo[grand.Token(0)] = grand.Value(1);
-			}
 		else if(child.Token(0) == "mission passengers")
 			for(const DataNode &grand : child)
-			{
 				loadedPassengers[grand.Token(0)] = grand.Value(1);
-			}
-
 	}
 }
 

@@ -201,8 +201,6 @@ void Ship::Load(const DataNode &node)
 		}
 		if(key == "sprite")
 			LoadSprite(child);
-		else if(key == "uuid" && child.Size() >= 2)
-			uuid = child.Token(1);
 		else if(child.Token(0) == "thumbnail" && child.Size() >= 2)
 			thumbnail = SpriteSet::Get(child.Token(1));
 		else if(key == "name" && child.Size() >= 2)
@@ -775,9 +773,6 @@ void Ship::Save(DataWriter &out) const
 		if(customSwizzle >= 0)
 			out.Write("swizzle", customSwizzle);
 		
-		if(!uuid.empty())
-			out.Write("uuid", uuid);
-		
 		out.Write("attributes");
 		out.BeginChild();
 		{
@@ -975,21 +970,6 @@ const string &Ship::Name() const
 void Ship::SetModelName(const string &model)
 {
 	this->modelName = model;
-}
-
-
-
-const string &Ship::UUID() const
-{
-	return uuid;
-}
-
-
-
-void Ship::EnsureUUID()
-{
-	if(uuid.empty())
-		uuid = Random::UUID();
 }
 
 

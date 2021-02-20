@@ -72,7 +72,7 @@ public:
 	bool IsMinor() const;
 	
 	// Generate a UUID if none is present.
-	void EnsureUUIDs();
+	void EnsureUUID();
 	
 	// Find out where this mission is offered.
 	enum Location {SPACEPORT, LANDING, JOB, ASSISTING, BOARDING};

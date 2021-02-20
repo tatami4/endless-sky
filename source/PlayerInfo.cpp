@@ -2958,11 +2958,9 @@ void PlayerInfo::Save(const string &path) const
 void PlayerInfo::EnsureUUIDs()
 {
 	for(Mission &mission : missions)
-		mission.EnsureUUIDs();
+		mission.EnsureUUID();
 	for(Mission &mission : inactiveMissions)
-		mission.EnsureUUIDs();
-	for(auto &ship : ships)
-		ship->EnsureUUID();
+		mission.EnsureUUID();
 }
 
 

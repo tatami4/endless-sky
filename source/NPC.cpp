@@ -95,8 +95,6 @@ void NPC::Load(const DataNode &node)
 			else
 				location.Load(child);
 		}
-		else if(child.Token(0) == "uuid" && child.Size() >= 2)
-			uuid = child.Token(1);
 		else if(child.Token(0) == "planet" && child.Size() >= 2)
 			planet = GameData::Planets().Get(child.Token(1));
 		else if(child.Token(0) == "succeed" && child.Size() >= 2)
@@ -225,8 +223,6 @@ void NPC::Save(DataWriter &out) const
 	out.Write("npc");
 	out.BeginChild();
 	{
-		if(!uuid.empty())
-			out.Write("uuid", uuid);
 		if(succeedIf)
 			out.Write("succeed", succeedIf);
 		if(failIf)
@@ -347,13 +343,6 @@ bool NPC::IsValid(bool asTemplate) const
 
 
 
-const string &NPC::UUID() const
-{
-	return uuid;
-}
-
-
-
 // Update spawning and despawning for this NPC.
 void NPC::UpdateSpawning(const PlayerInfo &player)
 {
@@ -370,16 +359,6 @@ void NPC::UpdateSpawning(const PlayerInfo &player)
 	// conditions. (Any such NPC will never be spawned in-game.)
 	if(passedSpawnConditions && !toDespawn.IsEmpty() && !passedDespawnConditions)
 		passedDespawnConditions = toDespawn.Test(player.Conditions());
-}
-
-
-
-void NPC::EnsureUUID()
-{
-	if(uuid.empty())
-		uuid = Random::UUID();
-	for(auto &ship : ships)
-		ship->EnsureUUID();
 }
 
 

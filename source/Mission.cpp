@@ -509,12 +509,10 @@ bool Mission::IsMinor() const
 
 
 
-void Mission::EnsureUUIDs()
+void Mission::EnsureUUID()
 {
 	if(uuid.empty())
 		uuid = Random::UUID();
-	for(NPC &npc : npcs)
-		npc.EnsureUUID();
 }
 
 
